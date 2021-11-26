@@ -1,1 +1,5 @@
 workshop01/target/
+workshop01/bin
+workshop01/.project
+workshop01/.classpath
+workshop01/.settings
