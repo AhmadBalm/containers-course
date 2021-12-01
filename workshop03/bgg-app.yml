@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: bggappv1-deploy
+  name: bggappv1-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bggappv1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: bggappv1
+    spec:
+      containers:
+      - image: stackupiss/bgg-backend:v1
+        name: bgg-backend
+        resources: {}
+        args: ["--prefix", "/v1"]
+        ports:
+        - containerPort: 3306
+        envFrom:
+        - configMapRef:
+            name: bgg-cm
+        - secretRef:
+            name: bgg-secret
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: bggappv1-svc
+  name: bggappv1-svc
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: bggappv1
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: bggappv2-deploy
+  name: bggappv2-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bggappv2
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: bggappv2
+    spec:
+      containers:
+      - image: stackupiss/bgg-backend:v2
+        name: bgg-backend
+        resources: {}
+        args: ["--prefix", "/v2"]
+        ports:
+        - containerPort: 3306
+        envFrom:
+        - configMapRef:
+            name: bgg-cm
+        - secretRef:
+            name: bgg-secret
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: bggappv2-svc
+  name: bggappv2-svc
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: bggappv2
+  type: ClusterIP
