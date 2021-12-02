@@ -1,0 +1,87 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wp-pv-claim
+  labels:
+    app: wordpress
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+  labels:
+    app: wordpress
+spec:
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+    spec:
+      containers:
+      - image: wordpress:5.8-apache
+        name: wordpress
+        envFrom:
+        - configMapRef:
+            name: wp-cm
+        - secretRef:
+            name: wp-secret
+        ports:
+        - containerPort: 80
+          name: wordpress
+        volumeMounts:
+        - name: wordpress-persistent-storage
+          mountPath: /var/www/html
+      volumes:
+      - name: wordpress-persistent-storage
+        persistentVolumeClaim:
+          claimName: wp-pv-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: wp-app-svc
+  name: wp-app-svc
+spec:
+  ports:
+  - port: 80
+  selector:
+    app: wordpress
+    tier: frontend
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wp-ing
+  labels:
+    name: wp-ing
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: wp-139.59.223.67.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend: 
+          service:
+            name: wp-app-svc
+            port: 
+              number: 80
+---

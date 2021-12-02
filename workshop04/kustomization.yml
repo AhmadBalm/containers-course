@@ -1,0 +1,4 @@
+resources:
+  - config.yml
+  - mysql-deployment.yml
+  - wordpress-deployment.yml
